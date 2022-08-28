@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            .stats {
+                border: 2px solid black;
+                margin-left: auto; 
+                margin-right: auto;
+                background-color: green;
+            }
+            .statsdata {
+                border: 2px solid black;
+            }
+        </style>
+    </head>
+    <body style="background-color:DodgerBlue;">
+        <table class="stats">
+            <tr>
+                <th>Statistics</th>
+            </tr>
+            <tr>
+                <td>Total Hours Invested = {{movies.totalruntime_hours}} Hours </td>
+            </tr>
+            <tr>
+                <td>Total Days Invested = {{movies.totalruntime_days}} Days</td>
+            </tr>
+            <tr>
+                <td>Total Number of Movies you watched = {{movies.totalmovies}} </td>
+            </tr>
+            <tr>
+                <td>9 and above Rated Movies = {{movies.nineandabove}} </td>
+            </tr>
+            <tr>
+                <td>8 and above Rated Movies = {{movies.eightandabove}} </td>
+            </tr>
+        </table>
+        <br>
+        <br>
+        <div style="overflow-y: scroll; height:400px;border: 2px;border-style: solid;">
+            {% if movies_name_poster %}  
+            {% for name,poster in movies_name_poster %}
+            <div style="float:left;padding-right: 10px;border: 2px;border-style: solid; height:210px; width:150px" >
+                <img src="{{ poster }}" style="padding-right: 0px;" width="150" height="160"><br>
+                {{ name }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </body>
+</html>
