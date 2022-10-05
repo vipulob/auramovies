@@ -6,13 +6,14 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script>
           $(document).ready(function(){
-            $("p").click(function(){
-              $(this).hide();
-            });
+              alert("Calling wait");
+              $('#wait').load('/auramovie/wait');
           });
           </script>
     </head>
     <body style="background-color:powderblue;">
+        <div id="wait">
+        </div>
         <h1>This is a Heading</h1>
         <h2>This is heading 2</h2>
         <h3>This is heading 3</h3>
