@@ -2,14 +2,42 @@
     <head>
         <title>Page Title</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <style>
+            .loader {
+              border: 16px solid #f3f3f3;
+              border-radius: 50%;
+              border-top: 16px solid #3498db;
+              width: 50px;
+              height: 50px;
+              margin-left: auto; 
+              margin-right: auto;
+              -webkit-animation: spin 2s linear infinite; /* Safari */
+              animation: spin 2s linear infinite;
+            }
+            /* Safari */
+            @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+            }
+
+            @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            }
+
+            #wait1 {
+                text-align: center;
+            }
+        </style>
     </head>
     <body>
-        <h1 id="wait1">Waiting for page load</h1>
+        <h1 id="wait1">Processing and Fetching Data... Can take few minutes</h1>
+        <div class="loader"></div>
         <div id="movie_list">
         </div>
         <script>
             $('#movie_list').load("/auramovie/movielist",function(){
-            $('#wait1').hide()});
+            $('#wait1').hide(), $('.loader').hide()});
         </script>
     </body>
     
