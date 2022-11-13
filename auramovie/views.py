@@ -39,6 +39,8 @@ def get_movie_info(filename_path):
     with open(filename_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
+            if row == []:
+                return 0
             if row[0] == '':
                 break
             if row[0] == 'Const':
@@ -66,7 +68,15 @@ def get_csv_file(request):
     filename_path = request.session.get('0')
     print(filename_path)
     #filename_path = fs.path(filename)
-    movies_dict = get_movie_info(filename_path)
+    error_context = None
+    try:
+        movies_dict = get_movie_info(filename_path)
+    except UnicodeDecodeError:
+        error_context = {'error_type': 1}
+        return render(request, "error.html", error_context)
+    if movies_dict == 0:
+        error_context = {'error_type': 2}
+        return render(request, "error.html", error_context)
     movies_name_poster = zip(movies_dict['lists'],movies_dict["posters"])
     #context = {'movies': movies_dict, 'img_path': img_path, 
     #'movies_name_poster':movies_name_poster}
@@ -82,13 +92,3 @@ def wait_page(request):
         print(filename_path)
         request.session['0'] = filename_path
     return render(request, "wait.html")
-
-
-'''
-  <script>
-          $(document).ready(function(){
-              $('#movie_list').load("/auramovie/movielist");
-              $('#wait').hide()
-          });
-          </script>
-'''

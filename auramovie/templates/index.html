@@ -2,22 +2,9 @@
 <html>
     <title>Calculate time invested in movies</title>
     <head>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
-        </script>
-        <script>
-            $(document).ready(function(){
-                $("button").click(function(){
-                    $("#div_content").load("wait");
-                });
-            });
-        </script>
     </head>
+
 <body>
-
-    <div id="div_content">
-        <div class = >GeeksforGeeks</div>
-    </div>
-
 <h1 style="text-align:center;">Calculate how much Time you have invested in movies till now</h1>
 
 <form style="text-align:center;" method="post" action="/auramovie/wait" enctype="multipart/form-data">
@@ -27,7 +14,17 @@
     <input type="submit" value="UPLOAD">
 </form>
 
-<p>Note: You will need a csv file to upload. You can get the csv file from IMDB</p>
+<p>Note: You will need a csv file to upload. You can get the csv file from IMDB website</p>
+<p>IMP: You will only be able to calculate time on the movies which you rated on IMDB website</p>
+<p>How to get CSV file from IMDB website:</p>
+<ul>
+    <li>Go to <a href="https://www.imdb.com/" target="_blank" rel="noopener noreferrer">https://www.imdb.com/</a></li>
+    <li>Login to your account</li>
+    <li>Go to Profile->Your Ratings</li>
+    <li>Click on three dots, click export and download the csv file</li>
+    <li>Upload that csv file above</li>
+</ul>
+<ul></ul>
 
 </body>
 </html>
