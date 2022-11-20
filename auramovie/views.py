@@ -64,10 +64,7 @@ def get_movie_info(filename_path):
     return movies_dict
 
 def get_csv_file(request):
-    #fs = FileSystemStorage()
     filename_path = request.session.get('0')
-    print(filename_path)
-    #filename_path = fs.path(filename)
     error_context = None
     try:
         movies_dict = get_movie_info(filename_path)
@@ -78,8 +75,6 @@ def get_csv_file(request):
         error_context = {'error_type': 2}
         return render(request, "error.html", error_context)
     movies_name_poster = zip(movies_dict['lists'],movies_dict["posters"])
-    #context = {'movies': movies_dict, 'img_path': img_path, 
-    #'movies_name_poster':movies_name_poster}
     context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster}
     return render(request, "list_movies.html", context)
 
@@ -89,6 +84,5 @@ def wait_page(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         filename_path = fs.path(filename)
-        print(filename_path)
         request.session['0'] = filename_path
     return render(request, "wait.html")

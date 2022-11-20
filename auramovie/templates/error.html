@@ -1,0 +1,17 @@
+<html>
+    <body>
+        {% if error_type == 2 %}
+        <p style="text-align:center;margin: 100px;">
+            Seems like your csv file is empty. Please upload the correct file.
+            Go back to <a href="/auramovie">Main Page</a>. 
+        </p>
+        {% endif %}
+        {% if error_type == 1 %}
+        <p style="text-align:center;margin: 100px;">
+            Seems like your file is not in CSV format. Please upload the correct file.
+            Go back to <a href="/auramovie">Main Page</a>. 
+        </p>
+        {% endif %}
+
+    </body>
+</html>
