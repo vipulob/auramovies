@@ -9,6 +9,7 @@ import json
 import time
 import asyncio
 from django.shortcuts import redirect
+import threading
 
 url = "https://movie-database-alternative.p.rapidapi.com/"
 headers = {
@@ -35,6 +36,8 @@ def get_movie_info(filename_path):
     movies_dict['eightandabove'] = 0
     movies_dict['sevenandabove'] = 0
     movie_poster = {}
+    response_thread = []
+    request_thread = []
     totalruntime = 0
     with open(filename_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
@@ -47,10 +50,31 @@ def get_movie_info(filename_path):
                 continue
             if row[0] == 'tvSeries':
                 continue
-            querystring = {"r":"json","i":row[0]}
-            response = requests.request("GET", url, headers=headers, params=querystring)
+            
+            def get_from_movie_api(movie_list):
+                querystring = {"r":"json","i":movie_list[0]}
+                # Get the info from Rapid API
+                response = requests.request("GET", url, headers=headers, params=querystring)
+                response_thread.append((movie_list,response))
+
+            # Start a thread for each request to Movie DB
+            each_request = threading.Thread(target=get_from_movie_api, args=(row,))
+            each_request.setDaemon(True)
+            request_thread.append(each_request)
+            each_request.start()
+            # Rapid API Server does not handle the API request fast due to DDOS safetly.
+            # Thats the reason this delay.
+            time.sleep(0.2)
+        
+        # Wait for each request to join.
+        for each_request in request_thread:
+            each_request.join()
+        
+        for row, response in response_thread:
             movies_dict['posters'].append(response.json()['Poster'])
             movies_dict['lists'].append(row[3])
+            if row[0] == '':
+                break
             totalruntime = totalruntime + int(row[7])
             if float(row[6]) > 9:
                 movies_dict['nineandabove'] += 1
@@ -58,6 +82,7 @@ def get_movie_info(filename_path):
                 movies_dict['eightandabove'] += 1
             if float(row[6]) >= 7 and float(row[6]) < 8:
                 movies_dict['eightandabove'] += 1
+        
     movies_dict['totalruntime_hours'] = int(totalruntime/60)
     movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
     movies_dict['totalmovies'] = len(movies_dict['lists'])
