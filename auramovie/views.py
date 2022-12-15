@@ -111,3 +111,14 @@ def wait_page(request):
         filename_path = fs.path(filename)
         request.session['0'] = filename_path
     return render(request, "wait.html")
+
+# Things to do.
+# Do error handling with respect to changes in csv files. 
+# Improve the Stats table look. 
+# Add the poster fetching info into a seperate Div, so it can processed seperately. 
+# Add the title to the page. 
+# Add the Heads so that google can catch it. 
+# Upload in google cloud. 
+# Netflix support. 
+# Check on how to add ad sense to this site. 
+# Add the hyperlinks to the movie page. 
