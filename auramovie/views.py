@@ -39,6 +39,10 @@ def get_movie_info(filename_path):
     response_thread = []
     request_thread = []
     totalruntime = 0
+    best_five_rated = []
+    movie_rating = {}
+    unsorted_movie_list = []
+    movie_count = 0
     with open(filename_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
@@ -48,17 +52,37 @@ def get_movie_info(filename_path):
                 break
             if row[0] == 'Const':
                 continue
-            if row[0] == 'tvSeries':
+            if row[5] == 'tvSeries':
                 continue
             
-            def get_from_movie_api(movie_list):
-                querystring = {"r":"json","i":movie_list[0]}
-                # Get the info from Rapid API
-                response = requests.request("GET", url, headers=headers, params=querystring)
-                response_thread.append((movie_list,response))
+            totalruntime = totalruntime + int(row[7])
+            if float(row[6]) > 9:
+                movies_dict['nineandabove'] += 1
+            if float(row[6]) >= 8 and float(row[6]) < 9:
+                movies_dict['eightandabove'] += 1
+            if float(row[6]) >= 7 and float(row[6]) < 8:
+                movies_dict['sevenandabove'] += 1
 
+            movie_count += 1
+            unsorted_movie_list.append(row)
+
+        movies_dict['totalruntime_hours'] = int(totalruntime/60)
+        movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
+        movies_dict['totalmovies'] = movie_count
+
+        sorted_movie_list = sorted(unsorted_movie_list, reverse=True,
+                            key=lambda unsorted_movie_list:unsorted_movie_list[6])
+
+        def get_from_movie_api(movie_list):
+            querystring = {"r":"json","i":movie_list[0]}
+            # Get the info from Rapid API
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            response_thread.append((movie_list,response))
+            movies_dict['lists'].append(movie_list[3])
+
+        for best_movie in sorted_movie_list[:5]:
             # Start a thread for each request to Movie DB
-            each_request = threading.Thread(target=get_from_movie_api, args=(row,))
+            each_request = threading.Thread(target=get_from_movie_api, args=(best_movie,))
             each_request.setDaemon(True)
             request_thread.append(each_request)
             each_request.start()
@@ -72,9 +96,10 @@ def get_movie_info(filename_path):
         
         for row, response in response_thread:
             movies_dict['posters'].append(response.json()['Poster'])
-            movies_dict['lists'].append(row[3])
+            #movies_dict['lists'].append(row[3])
             if row[0] == '':
                 break
+            '''
             totalruntime = totalruntime + int(row[7])
             if float(row[6]) > 9:
                 movies_dict['nineandabove'] += 1
@@ -82,10 +107,11 @@ def get_movie_info(filename_path):
                 movies_dict['eightandabove'] += 1
             if float(row[6]) >= 7 and float(row[6]) < 8:
                 movies_dict['eightandabove'] += 1
-        
+            
     movies_dict['totalruntime_hours'] = int(totalruntime/60)
     movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
     movies_dict['totalmovies'] = len(movies_dict['lists'])
+    '''
     return movies_dict
 
 def get_csv_file(request):
