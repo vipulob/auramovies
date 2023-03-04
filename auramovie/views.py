@@ -138,6 +138,14 @@ def wait_page(request):
         request.session['0'] = filename_path
     return render(request, "wait.html")
 
+def handler404(request, exception):
+    error_context = {'error_type': 3}
+    return render(request, "404.html", error_context)
+    
+def handler500(request):
+    error_context = {'error_type': 3}
+    return render(request, "404.html", error_context)
+
 # Things to do.
 # Do error handling with respect to changes in csv files. 
 # Improve the Stats table look. 

@@ -11,7 +11,7 @@
                 border: 2px solid black;
                 margin-left: auto; 
                 margin-right: auto;
-                background-color: green;
+                background-color: rgba(98, 128, 0, 0.203);
             }
             .statsdata {
                 border: 2px solid black;
@@ -21,7 +21,7 @@
     <body style="background-color:DodgerBlue;">
         <table class="stats">
             <tr>
-                <th>Statistics</th>
+                <th style="text-decoration: underline;">Statistics</th>
             </tr>
             <tr>
                 <td>Total Hours Invested = {{movies.totalruntime_hours}} Hours </td>
@@ -41,7 +41,8 @@
         </table>
         <br>
         <br>
-        <div style="overflow-y: scroll; height:400px;border: 2px;border-style: solid;">
+        <h3 style="color:rgb(11, 115, 184);">Five Best movies you Watched so far</h3>
+        <div style="overflow-y: scroll; height:230px;border: 2px;border-style: solid;">
             {% if movies_name_poster %}  
             {% for name,poster in movies_name_poster %}
             <div style="float:left;padding-right: 10px;border: 2px;border-style: solid; height:210px; width:150px" >
