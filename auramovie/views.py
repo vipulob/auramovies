@@ -52,9 +52,10 @@ def get_movie_info(filename_path):
                 break
             if row[0] == 'Const':
                 continue
-            if row[5] == 'tvSeries':
+            if 'tv' in row[5] or 'video' in row[5]:
                 continue
             
+            print("Row 7 :"+ row[7])
             totalruntime = totalruntime + int(row[7])
             if float(row[6]) > 9:
                 movies_dict['nineandabove'] += 1
@@ -152,4 +153,4 @@ def handler500(request):
 # Upload in google cloud. 
 # Netflix support. 
 # Check on how to add ad sense to this site. 
-# Add the hyperlinks to the movie page. 
+ 
