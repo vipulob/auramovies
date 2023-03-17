@@ -30,11 +30,13 @@ def get_movie_info(filename_path):
     movies_dict['totalruntime'] = 0
     movies_dict['totalmovies'] = 0
     movies_dict['posters'] = []
+    movies_dict['release_date'] = []
     movies_dict['lists'] = []
     movies_dict['totalruntime_days'] = 0
     movies_dict['nineandabove'] = 0
     movies_dict['eightandabove'] = 0
     movies_dict['sevenandabove'] = 0
+    movies_dict['released_posters'] = []
     movie_poster = {}
     response_thread = []
     request_thread = []
@@ -42,7 +44,9 @@ def get_movie_info(filename_path):
     best_five_rated = []
     movie_rating = {}
     unsorted_movie_list = []
+    sorted_movie_by_year = []
     movie_count = 0
+    old_movie_list = []
     with open(filename_path, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
@@ -54,10 +58,9 @@ def get_movie_info(filename_path):
                 continue
             if 'tv' in row[5] or 'video' in row[5]:
                 continue
-            
-            print("Row 7 :"+ row[7])
+
             totalruntime = totalruntime + int(row[7])
-            if float(row[6]) > 9:
+            if float(row[6]) >= 9:
                 movies_dict['nineandabove'] += 1
             if float(row[6]) >= 8 and float(row[6]) < 9:
                 movies_dict['eightandabove'] += 1
@@ -66,13 +69,16 @@ def get_movie_info(filename_path):
 
             movie_count += 1
             unsorted_movie_list.append(row)
-
+            
         movies_dict['totalruntime_hours'] = int(totalruntime/60)
         movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
         movies_dict['totalmovies'] = movie_count
 
         sorted_movie_list = sorted(unsorted_movie_list, reverse=True,
                             key=lambda unsorted_movie_list:unsorted_movie_list[6])
+        
+        ascend_movie_by_year = sorted(unsorted_movie_list, reverse=False,
+                            key=lambda unsorted_movie_list:unsorted_movie_list[11])
 
         def get_from_movie_api(movie_list):
             querystring = {"r":"json","i":movie_list[0]}
@@ -97,22 +103,16 @@ def get_movie_info(filename_path):
         
         for row, response in response_thread:
             movies_dict['posters'].append(response.json()['Poster'])
-            #movies_dict['lists'].append(row[3])
             if row[0] == '':
                 break
-            '''
-            totalruntime = totalruntime + int(row[7])
-            if float(row[6]) > 9:
-                movies_dict['nineandabove'] += 1
-            if float(row[6]) >= 8 and float(row[6]) < 9:
-                movies_dict['eightandabove'] += 1
-            if float(row[6]) >= 7 and float(row[6]) < 8:
-                movies_dict['eightandabove'] += 1
-            
-    movies_dict['totalruntime_hours'] = int(totalruntime/60)
-    movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
-    movies_dict['totalmovies'] = len(movies_dict['lists'])
-    '''
+        
+        for r_movie in [ascend_movie_by_year[0], ascend_movie_by_year[movie_count-1]]:
+            response_thread = []
+            get_from_movie_api(r_movie)
+            for each_request in request_thread:
+                each_request.join()
+            for row, response in response_thread:
+                movies_dict['released_posters'].append(response.json()['Poster'])
     return movies_dict
 
 def get_csv_file(request):
@@ -127,7 +127,11 @@ def get_csv_file(request):
         error_context = {'error_type': 2}
         return render(request, "error.html", error_context)
     movies_name_poster = zip(movies_dict['lists'],movies_dict["posters"])
-    context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster}
+    old_released = zip(movies_dict['lists'][5:6],movies_dict["released_posters"][0:1])
+    new_released = zip(movies_dict['lists'][6:7],movies_dict["released_posters"][1:2])
+    #print(list(released_posters))
+    context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster,
+               'old_released':old_released, 'new_released':new_released}
     return render(request, "list_movies.html", context)
 
 def wait_page(request):
@@ -154,3 +158,5 @@ def handler500(request):
 # Netflix support. 
 # Check on how to add ad sense to this site. 
  
+
+

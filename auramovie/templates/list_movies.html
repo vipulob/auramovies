@@ -41,10 +41,32 @@
         </table>
         <br>
         <br>
-        <h3 style="color:rgb(11, 115, 184);">Five Best movies you Watched so far</h3>
+        <h3 style="color:rgb(11, 115, 184);">Five Best rated movies you Watched so far</h3>
         <div style="overflow-y: scroll; height:230px;border: 2px;border-style: solid;">
             {% if movies_name_poster %}  
             {% for name,poster in movies_name_poster %}
+            <div style="float:left;padding-right: 10px;border: 2px;border-style: solid; height:210px; width:150px" >
+                <img src="{{ poster }}" style="padding-right: 0px;" width="150" height="160"><br>
+                {{ name }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <h3 style="color:rgb(11, 115, 184);">The Oldest Movie you have seen</h3>
+        <div style="overflow-y: scroll; height:230px;border: 2px;border-style: solid;">
+            {% if old_released %}  
+            {% for name,poster in old_released %}
+            <div style="float:left;padding-right: 10px;border: 2px;border-style: solid; height:210px; width:150px" >
+                <img src="{{ poster }}" style="padding-right: 0px;" width="150" height="160"><br>
+                {{ name }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <h3 style="color:rgb(11, 115, 184);">The Newest Movie you have seen</h3>
+        <div style="overflow-y: scroll; height:230px;border: 2px;border-style: solid;">
+            {% if new_released %}  
+            {% for name,poster in new_released %}
             <div style="float:left;padding-right: 10px;border: 2px;border-style: solid; height:210px; width:150px" >
                 <img src="{{ poster }}" style="padding-right: 0px;" width="150" height="160"><br>
                 {{ name }}
