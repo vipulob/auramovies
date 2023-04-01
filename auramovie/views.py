@@ -10,6 +10,7 @@ import time
 import asyncio
 from django.shortcuts import redirect
 import threading
+import os
 
 url = "https://movie-database-alternative.p.rapidapi.com/"
 headers = {
@@ -132,6 +133,7 @@ def get_csv_file(request):
     #print(list(released_posters))
     context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster,
                'old_released':old_released, 'new_released':new_released}
+    os.remove(filename_path)
     return render(request, "list_movies.html", context)
 
 def wait_page(request):
