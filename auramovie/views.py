@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
-from .forms import UploadFileForm
+from .forms import DocumentForm
 from django.core.files.storage import FileSystemStorage
 import csv
 import requests
@@ -11,6 +11,9 @@ import asyncio
 from django.shortcuts import redirect
 import threading
 import os
+from django.core.files.storage import default_storage
+from .models import Document
+
 
 url = "https://movie-database-alternative.p.rapidapi.com/"
 headers = {
@@ -21,12 +24,16 @@ headers = {
 filename = ''
 
 def index(request):
-    return render(request, "index.html")
+    form = DocumentForm()
+    return render(request, "index.html", {'form':form})
 
 def practise(request):
     return render(request, "practise.html")
 
-def get_movie_info(filename_path):
+def get_movie_info():
+    upload_file = Document.objects.all()[:1][0]
+    print(upload_file.csvfile.path)
+    filename_path = upload_file.csvfile.path
     movies_dict = {}
     movies_dict['totalruntime'] = 0
     movies_dict['totalmovies'] = 0
@@ -117,10 +124,13 @@ def get_movie_info(filename_path):
     return movies_dict
 
 def get_csv_file(request):
-    filename_path = request.session.get('0')
+    #filename_path = request.session.get('0')
+    #csv = Document()
+    #print(csv.csvfile.storage)
     error_context = None
     try:
-        movies_dict = get_movie_info(filename_path)
+        #movies_dict = get_movie_info(filename_path)
+        movies_dict = get_movie_info()
     except UnicodeDecodeError:
         error_context = {'error_type': 1}
         return render(request, "error.html", error_context)
@@ -133,16 +143,20 @@ def get_csv_file(request):
     #print(list(released_posters))
     context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster,
                'old_released':old_released, 'new_released':new_released}
-    os.remove(filename_path)
+    #os.remove(filename_path)
     return render(request, "list_movies.html", context)
 
 def wait_page(request):
-    if request.method == 'POST' and request.FILES['csvfile']:
-        myfile = request.FILES['csvfile']
-        fs = FileSystemStorage()
-        filename = fs.save(myfile.name, myfile)
-        filename_path = fs.path(filename)
-        request.session['0'] = filename_path
+    if request.method == 'POST':
+        print("Saving form")
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+        #myfile = request.FILES['csvfile']
+        #fs = FileSystemStorage()
+        #filename = fs.save(myfile.name, myfile)
+        #filename_path = fs.path(filename)
+        #request.session['0'] = filename_path
     return render(request, "wait.html")
 
 def handler404(request, exception):
