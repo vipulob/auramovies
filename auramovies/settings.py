@@ -128,7 +128,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STORAGES = {"default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"}}
+#STORAGES = {"default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"}}
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 GS_BUCKET_NAME = "aura-381503.appspot.com"
 
 '''

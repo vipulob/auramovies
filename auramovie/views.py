@@ -7,6 +7,7 @@ import csv
 import requests
 import json
 import time
+from io import StringIO
 import asyncio
 from django.shortcuts import redirect
 import threading
@@ -22,6 +23,7 @@ headers = {
 }
 
 filename = ''
+#print(default_storage.__class__)
 
 def index(request):
     form = DocumentForm()
@@ -32,8 +34,9 @@ def practise(request):
 
 def get_movie_info():
     upload_file = Document.objects.all()[:1][0]
-    print(upload_file.csvfile.path)
-    filename_path = upload_file.csvfile.path
+    print(upload_file.csvfile.storage)
+    # Creating a file like object. Google storage is giving the file in binary(not sure why)
+    csvfile = StringIO(upload_file.csvfile.read().decode())
     movies_dict = {}
     movies_dict['totalruntime'] = 0
     movies_dict['totalmovies'] = 0
@@ -55,78 +58,73 @@ def get_movie_info():
     sorted_movie_by_year = []
     movie_count = 0
     old_movie_list = []
-    with open(filename_path, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            if row == []:
-                return 0
-            if row[0] == '':
-                break
-            if row[0] == 'Const':
-                continue
-            if 'tv' in row[5] or 'video' in row[5]:
-                continue
+    reader = csv.reader(csvfile, dialect='excel', delimiter=',')
+    for row in reader:
+        if row == []:
+            return 0
+        if row[0] == '':
+            break
+        if row[0] == 'Const':
+            continue
+        if 'tv' in row[5] or 'video' in row[5]:
+            continue
 
-            totalruntime = totalruntime + int(row[7])
-            if float(row[6]) >= 9:
-                movies_dict['nineandabove'] += 1
-            if float(row[6]) >= 8 and float(row[6]) < 9:
-                movies_dict['eightandabove'] += 1
-            if float(row[6]) >= 7 and float(row[6]) < 8:
-                movies_dict['sevenandabove'] += 1
+        totalruntime = totalruntime + int(row[7])
+        if float(row[6]) >= 9:
+            movies_dict['nineandabove'] += 1
+        if float(row[6]) >= 8 and float(row[6]) < 9:
+            movies_dict['eightandabove'] += 1
+        if float(row[6]) >= 7 and float(row[6]) < 8:
+            movies_dict['sevenandabove'] += 1
+        movie_count += 1
+        unsorted_movie_list.append(row)
 
-            movie_count += 1
-            unsorted_movie_list.append(row)
-            
-        movies_dict['totalruntime_hours'] = int(totalruntime/60)
-        movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
-        movies_dict['totalmovies'] = movie_count
+    movies_dict['totalruntime_hours'] = int(totalruntime/60)
+    movies_dict['totalruntime_days'] = int(movies_dict['totalruntime_hours']/24)
+    movies_dict['totalmovies'] = movie_count
 
-        sorted_movie_list = sorted(unsorted_movie_list, reverse=True,
-                            key=lambda unsorted_movie_list:unsorted_movie_list[6])
-        
-        ascend_movie_by_year = sorted(unsorted_movie_list, reverse=False,
-                            key=lambda unsorted_movie_list:unsorted_movie_list[11])
+    sorted_movie_list = sorted(unsorted_movie_list, reverse=True,
+                        key=lambda unsorted_movie_list:unsorted_movie_list[6])
+    
+    ascend_movie_by_year = sorted(unsorted_movie_list, reverse=False,
+                        key=lambda unsorted_movie_list:unsorted_movie_list[11])
 
-        def get_from_movie_api(movie_list):
-            querystring = {"r":"json","i":movie_list[0]}
-            # Get the info from Rapid API
-            response = requests.request("GET", url, headers=headers, params=querystring)
-            response_thread.append((movie_list,response))
-            movies_dict['lists'].append(movie_list[3])
+    def get_from_movie_api(movie_list):
+        querystring = {"r":"json","i":movie_list[0]}
+        # Get the info from Rapid API
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        response_thread.append((movie_list,response))
+        movies_dict['lists'].append(movie_list[3])
 
-        for best_movie in sorted_movie_list[:5]:
-            # Start a thread for each request to Movie DB
-            each_request = threading.Thread(target=get_from_movie_api, args=(best_movie,))
-            each_request.setDaemon(True)
-            request_thread.append(each_request)
-            each_request.start()
-            # Rapid API Server does not handle the API request fast due to DDOS safetly.
-            # Thats the reason this delay.
-            time.sleep(0.2)
-        
-        # Wait for each request to join.
+    for best_movie in sorted_movie_list[:5]:
+        # Start a thread for each request to Movie DB
+        each_request = threading.Thread(target=get_from_movie_api, args=(best_movie,))
+        each_request.setDaemon(True)
+        request_thread.append(each_request)
+        each_request.start()
+        # Rapid API Server does not handle the API request fast due to DDOS safetly.
+        # Thats the reason this delay.
+        time.sleep(0.2)
+    
+    # Wait for each request to join.
+    for each_request in request_thread:
+        each_request.join()
+    
+    for row, response in response_thread:
+        movies_dict['posters'].append(response.json()['Poster'])
+        if row[0] == '':
+            break
+    
+    for r_movie in [ascend_movie_by_year[0], ascend_movie_by_year[movie_count-1]]:
+        response_thread = []
+        get_from_movie_api(r_movie)
         for each_request in request_thread:
             each_request.join()
-        
         for row, response in response_thread:
-            movies_dict['posters'].append(response.json()['Poster'])
-            if row[0] == '':
-                break
-        
-        for r_movie in [ascend_movie_by_year[0], ascend_movie_by_year[movie_count-1]]:
-            response_thread = []
-            get_from_movie_api(r_movie)
-            for each_request in request_thread:
-                each_request.join()
-            for row, response in response_thread:
-                movies_dict['released_posters'].append(response.json()['Poster'])
+            movies_dict['released_posters'].append(response.json()['Poster'])
     return movies_dict
 
 def get_csv_file(request):
-    #filename_path = request.session.get('0')
-    #csv = Document()
-    #print(csv.csvfile.storage)
     error_context = None
     try:
         #movies_dict = get_movie_info(filename_path)
@@ -143,7 +141,6 @@ def get_csv_file(request):
     #print(list(released_posters))
     context = {'movies': movies_dict, 'movies_name_poster':movies_name_poster,
                'old_released':old_released, 'new_released':new_released}
-    #os.remove(filename_path)
     return render(request, "list_movies.html", context)
 
 def wait_page(request):
@@ -152,11 +149,6 @@ def wait_page(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-        #myfile = request.FILES['csvfile']
-        #fs = FileSystemStorage()
-        #filename = fs.save(myfile.name, myfile)
-        #filename_path = fs.path(filename)
-        #request.session['0'] = filename_path
     return render(request, "wait.html")
 
 def handler404(request, exception):
