@@ -18,7 +18,7 @@ from django.urls import include,path
 from . import settings
 
 urlpatterns = [
-    path('auramovie/', include('auramovie.urls')),
+    path('', include('auramovie.urls')),
     #path('media', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
 ]

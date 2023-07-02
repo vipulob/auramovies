@@ -13,7 +13,7 @@
             $('#upload').click(function(){
             if($('#csvfile')[0].files.length == 0){
             alert("Please provide input CSV file");
-            $('form').attr('action',"/auramovie/");
+            $('form').attr('action',"");
             };
             });
         });
@@ -23,7 +23,7 @@
 <body>
 <h1 style="text-align:center;">Calculate how much Time you have invested in movies till now</h1>
 
-<form style="text-align:center;" method="post" action="/auramovie/wait" enctype="multipart/form-data">
+<form style="text-align:center;" method="post" action="/wait/" enctype="multipart/form-data">
     {% csrf_token %}
     <label for="csv">Select a CSV file:</label>
     {{ form.as_p }}

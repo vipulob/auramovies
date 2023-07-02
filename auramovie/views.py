@@ -1,18 +1,19 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.template import loader
 from .forms import DocumentForm
-from django.core.files.storage import FileSystemStorage
 import csv
 import requests
 import json
 import time
+import queue
+from io import BytesIO
 from io import StringIO
 import asyncio
 from django.shortcuts import redirect
 import threading
 import os
-from django.core.files.storage import default_storage
 from .models import Document
 
 
@@ -23,7 +24,7 @@ headers = {
 }
 
 filename = ''
-#print(default_storage.__class__)
+user_queue = queue.Queue()
 
 def index(request):
     form = DocumentForm()
@@ -33,10 +34,12 @@ def practise(request):
     return render(request, "practise.html")
 
 def get_movie_info():
-    upload_file = Document.objects.all()[:1][0]
-    print(upload_file.csvfile.storage)
+    #upload_file = Document.objects.all()[:1][0]
+    #print(upload_file.csvfile.storage)
+    csvfile_binary = user_queue.get()
     # Creating a file like object. Google storage is giving the file in binary(not sure why)
-    csvfile = StringIO(upload_file.csvfile.read().decode())
+    #csvfile = StringIO(upload_file.csvfile.read().decode())
+    csvfile = StringIO(csvfile_binary.read().decode())
     movies_dict = {}
     movies_dict['totalruntime'] = 0
     movies_dict['totalmovies'] = 0
@@ -143,18 +146,34 @@ def get_csv_file(request):
                'old_released':old_released, 'new_released':new_released}
     return render(request, "list_movies.html", context)
 
+
+def handle_uploaded_file(f):
+    destination = BytesIO()
+    for chunk in f.chunks():
+        #print(chunk)
+        destination.write(chunk)
+    destination.seek(0)
+    user_queue.put(destination)
+
 def wait_page(request):
+    '''
     if request.method == 'POST':
         print("Saving form")
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+    '''
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES["file"])
+            #return HttpResponseRedirect("/success/url/")
     return render(request, "wait.html")
 
 def handler404(request, exception):
     error_context = {'error_type': 3}
     return render(request, "404.html", error_context)
-    
+   
 def handler500(request):
     error_context = {'error_type': 3}
     return render(request, "404.html", error_context)
